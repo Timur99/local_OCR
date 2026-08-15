@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>local_OCR</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <p class="eyebrow">Локально · 127.0.0.1 · без облака</p>
+      <h1>local_OCR</h1>
+      <p class="lead">PDF сначала разбирается native-путём. OCR запускается только для проблемных страниц.</p>
+    </header>
+
+    <section class="panel" id="dropzone">
+      <input id="file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.tif,.tiff,.bmp" hidden />
+      <p class="drop-title">Перетащите файл или <button type="button" id="pick">выберите</button></p>
+      <p class="hint">PDF, JPG, PNG. Файлы не покидают компьютер.</p>
+      <div class="controls">
+        <label>
+          Режим
+          <select id="engine">
+            <option value="auto">Авто</option>
+            <option value="native">Только native</option>
+            <option value="paddleocr">PaddleOCR</option>
+          </select>
+        </label>
+        <label>
+          Язык
+          <select id="language">
+            <option value="ru">Русский</option>
+            <option value="en">English</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section class="status" id="status" hidden>
+      <div class="meta" id="meta"></div>
+      <div class="bar"><span id="bar"></span></div>
+      <p id="message"></p>
+    </section>
+
+    <section class="result" id="result" hidden>
+      <div class="result-head">
+        <h2>Результат</h2>
+        <div class="actions">
+          <button type="button" id="copy">Копировать</button>
+          <a id="download-md" download="result.md">Markdown</a>
+          <a id="download-txt" download="result.txt">TXT</a>
+        </div>
+      </div>
+      <pre id="output"></pre>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
