@@ -7,54 +7,69 @@
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <main class="wrap">
-    <header>
-      <p class="eyebrow">Локально · 127.0.0.1 · без облака</p>
-      <h1>local_OCR</h1>
-      <p class="lead">PDF сначала разбирается native-путём. OCR запускается только для проблемных страниц.</p>
+  <div class="app">
+    <header class="toolbar">
+      <span class="toolbar-title" id="toolbar-title">local_OCR</span>
+      <div class="toolbar-controls">
+        <div class="segmented" id="engines" role="radiogroup" aria-label="Режим обработки"></div>
+        <select class="popup" id="language" aria-label="Язык распознавания">
+          <option value="ru">Русский</option>
+          <option value="en">English</option>
+        </select>
+        <button type="button" class="btn btn-accent" id="new-file">Новый файл</button>
+      </div>
     </header>
 
-    <section class="panel" id="dropzone">
-      <input id="file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.tif,.tiff,.bmp" hidden />
-      <p class="drop-title">Перетащите файл или <button type="button" id="pick">выберите</button></p>
-      <p class="hint">PDF, JPG, PNG. Файлы не покидают компьютер.</p>
-      <div class="controls">
-        <label>
-          Режим
-          <select id="engine">
-            <option value="auto">Авто</option>
-            <option value="native">Только native</option>
-            <option value="paddleocr">PaddleOCR</option>
-          </select>
-        </label>
-        <label>
-          Язык
-          <select id="language">
-            <option value="ru">Русский</option>
-            <option value="en">English</option>
-          </select>
-        </label>
-      </div>
-    </section>
+    <div class="split">
+      <aside class="sidebar" id="sidebar" aria-label="История задач">
+        <div id="job-list"></div>
+      </aside>
 
-    <section class="status" id="status" hidden>
-      <div class="meta" id="meta"></div>
-      <div class="bar"><span id="bar"></span></div>
-      <p id="message"></p>
-    </section>
+      <main class="content" id="content">
+        <section class="empty" id="empty-pane">
+          <div class="empty-icon" aria-hidden="true">⌄</div>
+          <h2>Перетащите PDF или изображение</h2>
+          <p>PDF сначала разбирается напрямую. OCR запускается только там, где текст не читается.</p>
+          <p><button type="button" class="btn" id="pick">Выбрать файл</button></p>
+          <p class="hint">Файлы не покидают компьютер</p>
+        </section>
 
-    <section class="result" id="result" hidden>
-      <div class="result-head">
-        <h2>Результат</h2>
-        <div class="actions">
-          <button type="button" id="copy">Копировать</button>
-          <a id="download-md" download="result.md">Markdown</a>
-          <a id="download-txt" download="result.txt">TXT</a>
-        </div>
-      </div>
-      <pre id="output"></pre>
-    </section>
-  </main>
+        <section class="pane" id="progress-pane" hidden>
+          <h1 class="doc-title" id="progress-title"></h1>
+          <p class="doc-meta" id="progress-meta"></p>
+          <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+          <p class="progress-message" id="progress-message"></p>
+        </section>
+
+        <section class="pane" id="result-pane" hidden>
+          <h1 class="doc-title" id="doc-title"></h1>
+          <p class="doc-meta" id="doc-meta"></p>
+
+          <div class="grouped" id="facts"></div>
+
+          <div class="pagestrip" id="pagestrip"></div>
+          <p class="legend" id="legend" hidden></p>
+
+          <div id="notices"></div>
+
+          <div class="result-head">
+            <h2>Результат</h2>
+            <span class="result-scope" id="result-scope"></span>
+            <div class="result-actions">
+              <button type="button" class="btn" id="copy">Копировать</button>
+              <a class="btn" id="download-md" download="result.md">Markdown</a>
+              <a class="btn" id="download-txt" download="result.txt">TXT</a>
+              <button type="button" class="btn btn-danger" id="delete">Удалить</button>
+            </div>
+          </div>
+          <p class="page-confidence" id="page-confidence" hidden></p>
+          <article class="doc-text" id="output"></article>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <input id="file" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.tif,.tiff,.bmp" hidden />
   <script src="/app.js"></script>
 </body>
 </html>
