@@ -60,3 +60,4 @@ pdf2text scan.pdf > out.md
 ```bash
 pytest
 ```
+
