@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "local-ocr"
+version = "0.1.0"
+description = "Local document OCR with PDF triage and a future macOS DMG"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.32",
+  "python-multipart>=0.0.12",
+  "pydantic>=2.9",
+  "pdf-inspector>=1.14",
+  "pymupdf>=1.24",
+]
+
+[project.optional-dependencies]
+ocr = [
+  "paddlepaddle>=3.0",
+  "paddleocr>=3.0",
+]
+# Apple Vision — встроенный в macOS OCR, только для macOS 13+
+vision = [
+  "pyobjc-framework-Vision>=10.0; sys_platform == 'darwin'",
+  "pyobjc-framework-Quartz>=10.0; sys_platform == 'darwin'",
+]
+dev = [
+  "pytest>=8.0",
+  "httpx>=0.27",
+]
+
+[project.scripts]
+local-ocr = "backend.main:run"
+pdf2text = "backend.cli:run"
+
+[tool.setuptools.packages.find]
+include = ["backend*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
