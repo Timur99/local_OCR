@@ -21,6 +21,7 @@ class JobStatus(str, Enum):
 class EngineChoice(str, Enum):
     auto = "auto"
     native = "native"
+    vision = "vision"
     paddleocr = "paddleocr"
 
 
@@ -36,7 +37,12 @@ class PageResult(BaseModel):
     text: str = ""
     markdown: str = ""
     needs_ocr: bool = False
+    # Почему страница попала в план OCR: image | forced | scanned |
+    # encoding_issues | no_text_layer | no_triage. None — страница взята напрямую.
     ocr_reason: str | None = None
+    # Почему запланированный OCR не состоялся: limit | failed.
+    # None — состоялся (или не планировался).
+    skipped_reason: str | None = None
     confidence: float | None = None
 
 

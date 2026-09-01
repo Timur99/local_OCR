@@ -187,7 +187,7 @@ function showEmpty() {
   state.job = null;
   state.result = null;
   state.pageFilter = null;
-  $("toolbar-title").textContent = "local_OCR";
+  $("toolbar-title").textContent = "PDF2Text";
   showPane("empty-pane");
   loadJobs();
 }
@@ -384,6 +384,18 @@ function renderFacts(result, pageCount) {
   }
 }
 
+/* Причины из backend/domain/models.py: PageResult.skipped_reason. */
+const SKIP_REASONS = {
+  limit: "сработал лимит авто-режима",
+  failed: "движок не вернул результат",
+};
+
+function pageScopeLabel(page) {
+  if (!page) return "напрямую";
+  if (page.skipped_reason) return "OCR не выполнен";
+  return page.source === "ocr" ? "OCR" : "напрямую";
+}
+
 function renderPages(result) {
   const strip = $("pagestrip");
   const legend = $("legend");
@@ -396,12 +408,22 @@ function renderPages(result) {
   }
 
   let hasOcr = false;
+  let hasSkipped = false;
   for (const page of result.pages) {
-    const isOcr = page.source === "ocr";
+    /* Три состояния, а не два: страница, которой был нужен OCR, но он не
+       состоялся, не должна выглядеть как взятая напрямую. */
+    const isSkipped = Boolean(page.skipped_reason);
+    const isOcr = page.source === "ocr" && !isSkipped;
     if (isOcr) hasOcr = true;
-    const cell = el("button", `page-cell${isOcr ? " ocr" : ""}`, String(page.page));
+    if (isSkipped) hasSkipped = true;
+    const modifier = isSkipped ? " skipped" : isOcr ? " ocr" : "";
+    const cell = el("button", `page-cell${modifier}`, String(page.page));
     cell.type = "button";
-    cell.title = isOcr ? `Страница ${page.page} — распознана OCR` : `Страница ${page.page} — взята напрямую`;
+    cell.title = isSkipped
+      ? `Страница ${page.page} — нужен был OCR, но он не выполнен: ${SKIP_REASONS[page.skipped_reason] || page.skipped_reason}`
+      : isOcr
+        ? `Страница ${page.page} — распознана OCR`
+        : `Страница ${page.page} — взята напрямую`;
     cell.setAttribute("aria-pressed", String(state.pageFilter === page.page));
     cell.addEventListener("click", () => {
       state.pageFilter = state.pageFilter === page.page ? null : page.page;
@@ -412,9 +434,12 @@ function renderPages(result) {
   }
 
   legend.hidden = false;
-  legend.textContent = hasOcr
-    ? "Синим — страницы, где текст не читался и потребовался OCR. Нажмите на страницу, чтобы открыть её отдельно."
-    : "Все страницы разобраны напрямую, OCR не запускался.";
+  const parts = [];
+  if (hasOcr) parts.push("Синим — страницы, где текст не читался и потребовался OCR.");
+  if (hasSkipped) parts.push("Жёлтым — страницы, которым нужен был OCR, но он не выполнен: они пустые.");
+  if (!parts.length) parts.push("Все страницы разобраны напрямую, OCR не запускался.");
+  parts.push("Нажмите на страницу, чтобы открыть её отдельно.");
+  legend.textContent = parts.join(" ");
 }
 
 function renderNotices(result) {
@@ -565,7 +590,7 @@ function renderText() {
   const text = page ? page.markdown || page.text : "";
   state.copyText = text;
   showText(output, text, "На этой странице текст не извлечён.");
-  scope.textContent = `страница ${state.pageFilter} · ${page && page.source === "ocr" ? "OCR" : "напрямую"}`;
+  scope.textContent = `страница ${state.pageFilter} · ${pageScopeLabel(page)}`;
 
   if (page && page.confidence !== null && page.confidence !== undefined) {
     confidence.hidden = false;

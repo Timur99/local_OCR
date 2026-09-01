@@ -411,6 +411,13 @@ body {
   color: var(--accent-text);
 }
 
+/* Страница, которой был нужен OCR, но он не состоялся. Отдельный цвет:
+   серая ячейка означала бы "текст взят напрямую", а это неправда. */
+.page-cell.skipped {
+  background: var(--warn-fill);
+  color: var(--warn-text);
+}
+
 .page-cell[aria-pressed="true"] { border-color: var(--accent); }
 
 .pagestrip.dense {

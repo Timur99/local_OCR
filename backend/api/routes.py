@@ -38,6 +38,11 @@ def _run_job(job_id: str, path: Path) -> None:
         store.save(job)
 
 
+def _engine_available(name: str) -> bool:
+    engine = pipeline.engine_by_name(name)
+    return engine is not None and engine.available()
+
+
 @router.get("/engines")
 def engines() -> dict:
     return {
@@ -56,10 +61,16 @@ def engines() -> dict:
                 "description": "Без OCR. Только text-based PDF",
             },
             {
+                "id": "vision",
+                "label": "Apple Vision",
+                "available": _engine_available("vision"),
+                "description": "Встроенный OCR macOS. Быстрый, ничего не нужно устанавливать",
+            },
+            {
                 "id": "paddleocr",
                 "label": "PaddleOCR",
-                "available": pipeline.ocr_engine.available(),
-                "description": "Принудительный OCR всех страниц",
+                "available": _engine_available("paddleocr"),
+                "description": "Запасной движок. Принудительный OCR всех страниц",
             },
         ],
     }

@@ -59,6 +59,24 @@ def _to_jsonable(value: Any) -> Any:
     return str(value)
 
 
+EAST_SLAVIC = {"ru", "uk", "be"}
+
+
+def recognition_model(language: str) -> str | None:
+    """Имя модели распознавания под язык, или None — оставить выбор PaddleOCR.
+
+    PaddleOCR **игнорирует `lang`, если задано имя любой модели** — он пишет об
+    этом предупреждением при инициализации. Мы обязаны пиновать детектор ради
+    памяти (см. `_client`), а значит модель распознавания надо выбирать самим.
+    Иначе для русского молча берётся латинская `PP-OCRv6_medium_rec`, и вся
+    кириллица теряется: строки находятся, текст выходит пустым.
+    """
+    code = language.split("-")[0].lower()
+    if code in EAST_SLAVIC:
+        return "eslav_PP-OCRv5_mobile_rec"
+    return None
+
+
 class PaddleOCREngine:
     name = "paddleocr"
 
@@ -102,14 +120,19 @@ class PaddleOCREngine:
         if lang not in self._clients:
             from paddleocr import PaddleOCR
 
+            kwargs: dict[str, Any] = {
+                "lang": lang,
+                # server_det на M3 Pro 18 GB съедал ~30 GB и уходил в своп
+                "text_detection_model_name": "PP-OCRv5_mobile_det",
+                "use_doc_orientation_classify": False,
+                "use_doc_unwarping": False,
+                "use_textline_orientation": False,
+            }
+            recognition = recognition_model(lang)
+            if recognition is not None:
+                kwargs["text_recognition_model_name"] = recognition
             try:
-                self._clients[lang] = PaddleOCR(
-                    lang=lang,
-                    text_detection_model_name="PP-OCRv5_mobile_det",
-                    use_doc_orientation_classify=False,
-                    use_doc_unwarping=False,
-                    use_textline_orientation=False,
-                )
+                self._clients[lang] = PaddleOCR(**kwargs)
             except TypeError:
                 self._clients[lang] = PaddleOCR(lang=lang, use_angle_cls=False)
         return self._clients[lang]
